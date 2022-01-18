@@ -1,6 +1,7 @@
 import 'package:bytebank2/database/dao/contact_dao.dart';
 import 'package:bytebank2/models/contact.dart';
 import 'package:bytebank2/screens/contact_form.dart';
+import 'package:bytebank2/screens/contacts_profile.dart';
 import 'package:flutter/material.dart';
 
 class ContactsList extends StatefulWidget {
@@ -11,8 +12,10 @@ class ContactsList extends StatefulWidget {
 }
 
 class _ContactsListState extends State<ContactsList> {
-
   final ContactDao _dao = ContactDao();
+  notifyState() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,20 +61,18 @@ class _ContactsListState extends State<ContactsList> {
                 return ListView.builder(
                   itemBuilder: (context, index) {
                     final Contact contact = contacts[index];
-                    return _ContactItem(contact);
+                    return _ContactItem(contact, notifyState);
                   },
                   itemCount: contacts.length,
                 );
             }
-          }
-      ),
+          }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => const ContactForm()
-              )
-          ).then((value) => setState(() {}));
+          Navigator.of(context)
+              .push(
+                  MaterialPageRoute(builder: (context) => const ContactForm()))
+              .then((value) => setState(() {}));
         },
         child: const Icon(Icons.add),
       ),
@@ -80,24 +81,35 @@ class _ContactsListState extends State<ContactsList> {
 }
 
 class _ContactItem extends StatelessWidget {
-  const _ContactItem(this.contact);
-
+  const _ContactItem(this.contact, this.notifyParent);
+  final Function notifyParent;
   final Contact contact;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(contact.name,
-            style: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w600,
-            )),
-        subtitle: Text(
-          contact.accountNumber.toString(),
-          style: const TextStyle(fontSize: 16.0),
-        ),
-      ),
+    return Material(
+        child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => ContactsProfile(contact.id, contact.name, contact.accountNumber)
+              )).then((value) => notifyParent());
+            },
+            child: Card(
+              child: ListTile(
+                title: Text(
+                  contact.name,
+                  style: const TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  contact.accountNumber.toString(),
+                  style: const TextStyle(fontSize: 16.0),
+                ),
+              ),
+            )
+        )
     );
   }
 }
